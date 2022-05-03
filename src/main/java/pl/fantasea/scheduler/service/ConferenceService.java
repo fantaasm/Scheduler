@@ -63,6 +63,10 @@ public class ConferenceService {
         return sendEmail(sb);
     }
 
+    public boolean unregisterUser(String login,String email, Long conferenceId) {
+        return false;
+    }
+
     public boolean sendEmail(String message) {
         if(message.isEmpty() || message.isBlank()) {
             throw new IllegalArgumentException("Message cannot be empty");

@@ -66,7 +66,7 @@ public class ConferenceServiceUnitTests {
         var result = assertDoesNotThrow(() -> conferenceService.registerUser(user.getEmail(), user.getLogin(), anyLong()));
         assertThat(result).isTrue();
 
-        //verify
+        // verify
         verify(conferenceRepository).findById(anyLong());
     }
 
@@ -82,7 +82,7 @@ public class ConferenceServiceUnitTests {
         var newUser = new User().setLogin("testUser").setEmail("test1@test.pl");
         assertThrows(UserLoginAlreadyTakenException.class, () -> conferenceService.registerUser(newUser.getEmail(), newUser.getLogin(), anyLong()));
 
-        //verify
+        // verify
         verify(conferenceRepository).findById(anyLong());
         verify(userRepository).findByLogin(anyString());
     }
@@ -93,7 +93,7 @@ public class ConferenceServiceUnitTests {
         // act & assert
         var user = new User().setLogin("test").setEmail("test@test.pl");
         assertThrows(ConferenceNotFoundException.class, () -> conferenceService.registerUser(user.getEmail(), user.getLogin(), anyLong()));
-        //verify
+        // verify
     }
 
     @Test
@@ -112,7 +112,7 @@ public class ConferenceServiceUnitTests {
         var user = new User().setLogin("test6").setEmail("test6@test.pl");
         assertThrows(ConferenceUserLimitExceededException.class, () -> conferenceService.registerUser(user.getEmail(), user.getLogin(), anyLong()));
 
-        //verify
+        // verify
         verify(conferenceRepository).findById(anyLong());
     }
 
@@ -130,10 +130,62 @@ public class ConferenceServiceUnitTests {
         var newUser = new User().setLogin("test1").setEmail("test1@test.pl");
         assertThrows(ConferenceUserAlreadyRegisteredException.class, () -> conferenceService.registerUser(newUser.getEmail(), newUser.getLogin(), anyLong()));
 
-        //verify
+        // verify
         verify(conferenceRepository).findById(anyLong());
         verify(userRepository).findByLogin("test1");
     }
+
+    @Test
+    public void unregisterUser_should_return_true_if_unregistered()  {
+        // arrange
+        var exampleConference = createRandomConference();
+        var exampleUser = new User().setLogin("test1").setEmail("test1@test.pl").setConferences(Set.of(exampleConference));
+        given(conferenceRepository.findById(anyLong())).willReturn(Optional.of(exampleConference.setRegisteredUsers(Set.of(exampleUser))));
+        given(userRepository.findByLogin(anyString())).willReturn(Optional.of(exampleUser));
+
+        // act & assert
+        var result = conferenceService.unregisterUser(exampleUser.getEmail(), exampleUser.getLogin(), anyLong());
+        assertThat(result).isTrue();
+
+        // verify
+        verify(conferenceRepository).findById(anyLong());
+        verify(userRepository).findByLogin(anyString());
+    }
+    @Test
+    public void unregisterUser_should_throw_exception_if_login_email_mismatch()  {
+        // arrange
+        var exampleConference = createRandomConference();
+        var exampleUser = new User().setLogin("test1").setEmail("test1@test.pl").setConferences(Set.of(exampleConference));
+        given(conferenceRepository.findById(anyLong())).willReturn(Optional.of(exampleConference.setRegisteredUsers(Set.of(exampleUser))));
+        given(userRepository.findByLogin(anyString())).willReturn(Optional.of(exampleUser));
+
+        // act & assert
+        var result = conferenceService.unregisterUser(exampleUser.getEmail(), exampleUser.getLogin(), anyLong());
+        assertThat(result).isTrue();
+
+        // verify
+        verify(conferenceRepository).findById(anyLong());
+        verify(userRepository).findByLogin(anyString());
+    }
+
+        @Test
+    public void unregisterUser_should_throw_exception_if_user_not_registered()  {
+        // arrange
+        var exampleConference = createRandomConference();
+        var exampleUser = new User().setLogin("test1").setEmail("test1@test.pl").setConferences(Set.of(exampleConference));
+        given(conferenceRepository.findById(anyLong())).willReturn(Optional.of(exampleConference.setRegisteredUsers(Set.of(exampleUser))));
+
+        given(userRepository.findByLogin(anyString())).willReturn(Optional.of(exampleUser));
+        // act & assert
+        var result = conferenceService.unregisterUser(exampleUser.getEmail(), exampleUser.getLogin(), anyLong());
+        assertThat(result).isTrue();
+
+        // verify
+        verify(conferenceRepository).findById(anyLong());
+        verify(userRepository).findByLogin(anyString());
+    }
+
+
 
     @Test
     public void sendEmail_should_return_true_if_email_sent() {
@@ -142,7 +194,7 @@ public class ConferenceServiceUnitTests {
         var message = "Test message";
         var result = conferenceService.sendEmail(message);
         assertThat(result).isTrue();
-        //verify
+        // verify
     }
 
 
