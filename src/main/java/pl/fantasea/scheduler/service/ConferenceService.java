@@ -1,10 +1,7 @@
 package pl.fantasea.scheduler.service;
 
 import org.springframework.stereotype.Service;
-import pl.fantasea.scheduler.exception.ConferenceNotFoundException;
-import pl.fantasea.scheduler.exception.ConferenceUserAlreadyRegisteredException;
-import pl.fantasea.scheduler.exception.ConferenceUserLimitExceededException;
-import pl.fantasea.scheduler.exception.UserLoginAlreadyTakenException;
+import pl.fantasea.scheduler.exception.*;
 import pl.fantasea.scheduler.model.User;
 import pl.fantasea.scheduler.repository.ConferenceRepository;
 import pl.fantasea.scheduler.repository.UserRepository;
@@ -14,7 +11,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
@@ -55,20 +51,39 @@ public class ConferenceService {
             userRepository.save(user);
         }
 
-        String sb = "data wyslania: " + LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS) +
-                ", do: " + user.getEmail() +
-                ", tresc: " + "Witaj " + user.getLogin() +
-                "! Zostałeś pomyślnie zarejestrowany do konferencji " + conference.getName();
+        String sb = "data wyslania: " + LocalDateTime
+                .now()
+                .truncatedTo(ChronoUnit.SECONDS) + ", do: " + user.getEmail() + ", tresc: " + "Witaj " + user.getLogin() + "! Zostałeś pomyślnie " + "zarejestrowany do konferencji " + conference.getName();
 
         return sendEmail(sb);
     }
 
-    public boolean unregisterUser(String login,String email, Long conferenceId) {
-        return false;
+    public boolean unregisterUser(String login, String email, Long conferenceId) {
+
+        var dbUser = userRepository.findByLoginAndEmail(login, email);
+
+        if (dbUser.isEmpty()) {
+            throw new UserLoginEmailMismatchException("User login or email mismatch");
+        }
+
+        var user = dbUser.get();
+        var conference = conferenceRepository.findById(conferenceId).orElseThrow(() -> new ConferenceNotFoundException(conferenceId));
+
+        if (!conference.getRegisteredUsers().removeIf(usr -> usr.getLogin().equals(user.getLogin()))) {
+            throw new ConferenceUserNotRegisteredException("User not registered");
+        }
+
+        conferenceRepository.save(conference);
+
+        String sb = "data wyslania: " + LocalDateTime
+                .now()
+                .truncatedTo(ChronoUnit.SECONDS) + ", do: " + user.getEmail() + ", tresc: " + "Witaj " + user.getLogin() + "! Zostałeś pomyślnie " + "wypisany z konferencji " + conference.getName();
+
+        return sendEmail(sb);
     }
 
     public boolean sendEmail(String message) {
-        if(message.isEmpty() || message.isBlank()) {
+        if (message.isEmpty() || message.isBlank()) {
             throw new IllegalArgumentException("Message cannot be empty");
         }
 
