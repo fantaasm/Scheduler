@@ -1,7 +1,7 @@
 package pl.fantasea.scheduler.exception;
 
-public class UserLoginAlreadyTakenException extends RuntimeException{
+public class UserLoginAlreadyTakenException extends RuntimeException {
     public UserLoginAlreadyTakenException() {
-        super("User login already taken");
+        super("Użytkownik z takim loginem lub adresem email już istnieje");
     }
 }
