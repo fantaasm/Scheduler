@@ -1,20 +1,18 @@
 package pl.fantasea.scheduler.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.sun.istack.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.hibernate.Hibernate;
+import pl.fantasea.scheduler.model.enums.Subject;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.ManyToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -27,8 +25,14 @@ import java.util.Set;
 public class Conference extends EntityBase {
 
     @NotNull
+    @NotBlank(message = "Conference name cannot be empty")
     @Column(name = "name")
     private String name;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "subject")
+    private Subject subject;
 
     @NotNull
     @Column(name = "start_date")
@@ -43,30 +47,20 @@ public class Conference extends EntityBase {
     private Integer maxParticipants;
 
     @ManyToMany(mappedBy = "conferences")
+    @JsonManagedReference
     private Set<User> registeredUsers = new HashSet<>();
 
     @Override
-    public int hashCode() {
-        return getClass().hashCode();
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
-        Conference that = (Conference) o;
-        return id != null && Objects.equals(id, that.id);
-    }
-
-    @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" +
-                "id = " + id + ", " +
-                "name = " + name + ", " +
-                "startDate = " + startDate + ", " +
-                "endDate = " + endDate + ", " +
-                "maxParticipants = " + maxParticipants + ", " +
-                "createdAt = " + createdAt + ", " +
-                "modifiedAt = " + modifiedAt + ")";
+        return getClass().getSimpleName()
+                + "(" + "id = " + id + ", "
+                + "name = " + name + ", "
+                + "subject = " + subject + ", "
+                + "startDate = " + startDate + ", "
+                + "endDate = " + endDate + ", "
+                + "maxParticipants = " + maxParticipants + ", "
+                + "createdAt = " + createdAt + ", "
+                + "modifiedAt = " + modifiedAt + ")";
     }
 }
+
