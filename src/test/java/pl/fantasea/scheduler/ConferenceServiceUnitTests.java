@@ -136,8 +136,9 @@ public class ConferenceServiceUnitTests {
     public void unregisterUser_should_return_true_if_unregistered() {
         // arrange
         var exampleConference = createRandomConference();
-        var exampleUser = new User("test1", "test1@test.pl").setConferences(Set.of(exampleConference));
-        given(conferenceRepository.findById(anyLong())).willReturn(Optional.of(exampleConference.setRegisteredUsers(new HashSet<>(Set.of(exampleUser))))); // because Set.of returns immutable set and DB not
+        exampleConference.setId(1L);
+        var exampleUser = new User("test1", "test1@test.pl").setConferences(new HashSet<>(Set.of(exampleConference))); // because Set.of returns immutable set and DB not
+        given(conferenceRepository.findById(anyLong())).willReturn(Optional.of(exampleConference.setRegisteredUsers(Set.of(exampleUser))));
         given(userRepository.findByLoginAndEmail(exampleUser.getLogin(), exampleUser.getEmail())).willReturn(Optional.of(exampleUser));
 
         // act & assert
